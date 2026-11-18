@@ -2,10 +2,13 @@
 
 An interactive, responsive web-based quiz and reviewer portal designed for **BM2506 (STI Courseware Assessment)** covering items compiled directly from **07 Quiz 1** and **08 Quiz 1**.
 
+🌐 **Live Demo / Preview**: [https://j-mar114.github.io/Techno-PreFinals/](https://j-mar114.github.io/Techno-PreFinals/)
+
 ---
 
 ## 👨‍💻 Developer
-**Jaymar Budduan**
+**Jaymar Budduan**  
+GitHub: [@J-mar114](https://github.com/J-mar114)
 
 ---
 
@@ -29,20 +32,24 @@ An interactive, responsive web-based quiz and reviewer portal designed for **BM2
 ├── index.html     # Semantic structure and application layout
 ├── style.css      # Custom styles, responsive layout, CSS variables, and themes
 ├── script.js      # Quiz engine, state management, question bank, and interactivity
-└── README.md      # Project documentation and developer details
+└── README.md      # Project documentation, live demo, and developer details
 ```
 
 ---
 
 ## 🛠️ Getting Started
 
-1. **Clone or Download** this repository:
+1. **Clone this repository**:
    ```bash
-   git clone https://github.com/your-username/your-repo-name.git
+   git clone https://github.com/J-mar114/Techno-PreFinals.git
    ```
-2. **Open the project**:
-   - Simply double-click `index.html` or open it in any modern web browser (Google Chrome, Microsoft Edge, Mozilla Firefox, Brave, Safari).
-   - No build tools, external dependencies, or web servers required!
+2. **Navigate into the directory**:
+   ```bash
+   cd Techno-PreFinals
+   ```
+3. **Launch the portal**:
+   - Simply double-click `index.html` or open it with your preferred web browser (Google Chrome, Microsoft Edge, Mozilla Firefox, Brave, Safari).
+   - Alternatively, visit the live website directly at [j-mar114.github.io/Techno-PreFinals](https://j-mar114.github.io/Techno-PreFinals/).
 
 ---
 
