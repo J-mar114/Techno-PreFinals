@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BM2506 Interactive Quiz Portal | STI Reviewer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- Top Navigation -->
+  <header class="navbar">
+    <div class="navbar-inner">
+      <div class="brand" id="homeLogoBtn" title="Return to Quiz Selection">
+        <div class="brand-badge">BM2506</div>
+        <div>
+          <span class="brand-title">Interactive Quiz & Reviewer</span>
+          <span class="brand-subtitle">STI Courseware Assessment Portal</span>
+        </div>
+      </div>
+      <div class="nav-actions">
+        <button id="exitQuizBtn" class="btn btn-secondary hidden">Exit to Menu</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- VIEW 1: DECK SELECTION -->
+    <section id="homeView">
+      <div class="hero">
+        <div class="hero-pill">50 Complete Multiple-Choice Items</div>
+        <h1>BM2506 Assessment Reviewer</h1>
+        <p>Select a quiz set below to begin practicing. All questions and choices match your official BM2506 quiz sheets verbatim.</p>
+      </div>
+
+      <!-- Practice vs Exam Mode Selector -->
+      <div class="mode-selector-card">
+        <div class="mode-info">
+          <strong>Assessment Mode</strong>
+          <span id="modeDescription">Practice Mode: Reveals the correct answer immediately after you pick an option.</span>
+        </div>
+        <div class="segmented-control" role="group" aria-label="Quiz Mode">
+          <button type="button" class="segment-btn active" data-mode="practice">Practice Mode (Instant Check)</button>
+          <button type="button" class="segment-btn" data-mode="exam">Exam Mode (Score at End)</button>
+        </div>
+      </div>
+
+      <!-- Quiz Decks -->
+      <div class="deck-grid">
+        <!-- Deck 1 -->
+        <article class="deck-card">
+          <div>
+            <div class="deck-meta">
+              <span class="deck-tag">07 Quiz 1</span>
+              <span class="deck-count">25 Questions • 25 Points</span>
+            </div>
+            <h2>Go-To-Market (GTM) & Sales Funnel</h2>
+            <p>Covers ROI, bounce rate, hybrid channels, TOFU/MOFU/BOFU stages, sales mapping, BANT qualification, and GTM Canvas.</p>
+          </div>
+          <div class="deck-footer">
+            <span class="best-score" id="best-quiz1">Best Score: Not taken</span>
+            <button class="btn btn-primary start-deck-btn" data-deck="quiz1">Start Quiz 1</button>
+          </div>
+        </article>
+
+        <!-- Deck 2 -->
+        <article class="deck-card accent-gold">
+          <div>
+            <div class="deck-meta">
+              <span class="deck-tag">08 Quiz 1</span>
+              <span class="deck-count">25 Questions • 25 Points</span>
+            </div>
+            <h2>Startup Costs & Financial Projections</h2>
+            <p>Covers pre-launch & launch costs, financial statements, break-even & sensitivity analysis, CAC, LTV, burn rate, and EBITDA.</p>
+          </div>
+          <div class="deck-footer">
+            <span class="best-score" id="best-quiz2">Best Score: Not taken</span>
+            <button class="btn btn-primary start-deck-btn" data-deck="quiz2">Start Quiz 2</button>
+          </div>
+        </article>
+
+        <!-- Combined Deck -->
+        <article class="deck-card accent-emerald">
+          <div>
+            <div class="deck-meta">
+              <span class="deck-tag">Master Review</span>
+              <span class="deck-count">50 Questions • 50 Points</span>
+            </div>
+            <h2>Combined Comprehensive Exam</h2>
+            <p>Take all 50 items from both 07 Quiz 1 and 08 Quiz 1 in one complete sitting to test total mastery before your exam.</p>
+          </div>
+          <div class="deck-footer">
+            <span class="best-score" id="best-all">Best Score: Not taken</span>
+            <button class="btn btn-primary start-deck-btn" data-deck="all">Start All 50</button>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- VIEW 2: ACTIVE QUIZ WORKSPACE -->
+    <section id="quizView" class="hidden">
+      <div class="quiz-topbar">
+        <div class="quiz-topbar-row">
+          <span class="quiz-deck-label" id="activeDeckTitle">07 Quiz 1</span>
+          <div class="quiz-stats-pill">
+            <span id="answeredCounter">Answered: 0 / 25</span>
+            <span id="timerDisplay">00:00</span>
+          </div>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+      </div>
+
+      <div class="quiz-layout">
+        <!-- Main Question Panel -->
+        <div class="question-card">
+          <div class="question-header">
+            <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+              <span class="q-number-badge" id="questionNumberLabel">Question 1 of 25</span>
+              <span class="q-source-tag" id="questionSourceLabel">07 Quiz 1 • Item #1</span>
+            </div>
+            <button type="button" class="flag-btn" id="flagQuestionBtn" title="Bookmark question for review">
+              <span>⚑</span> <span id="flagBtnText">Flag</span>
+            </button>
+          </div>
+
+          <div class="question-text" id="questionText">Loading question...</div>
+
+          <div class="options-list" id="optionsContainer"></div>
+
+          <div class="feedback-banner" id="feedbackBanner"></div>
+
+          <div class="question-footer">
+            <button type="button" class="btn btn-secondary" id="prevBtn">← Previous</button>
+            <div style="display:flex; gap:0.65rem;">
+              <button type="button" class="btn btn-primary" id="nextBtn">Next →</button>
+              <button type="button" class="btn btn-success hidden" id="submitQuizBtn">Submit Quiz</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Question Navigator Sidebar -->
+        <aside class="navigator-card">
+          <div class="navigator-title">
+            <span>Question Navigator</span>
+            <span id="navProgressText" style="font-size:0.78rem; color:var(--primary);">0/25</span>
+          </div>
+          <p class="navigator-sub">Click any number to jump directly to that item.</p>
+
+          <div class="nav-grid" id="navGrid"></div>
+
+          <div class="legend">
+            <div class="legend-item"><span class="legend-swatch" style="background:var(--bg-subtle);"></span> Unanswered</div>
+            <div class="legend-item"><span class="legend-swatch" style="background:var(--primary-light); border-color:#93c5fd;"></span> Answered</div>
+            <div class="legend-item"><span class="legend-swatch" style="background:var(--accent);"></span> Flagged</div>
+          </div>
+
+          <button type="button" class="btn btn-success" id="sidebarSubmitBtn" style="width:100%;">Finish & Grade Quiz</button>
+        </aside>
+      </div>
+    </section>
+
+    <!-- VIEW 3: RESULTS & FULL REVIEW -->
+    <section id="resultsView" class="hidden">
+      <div class="results-header-card">
+        <div class="score-ring" id="scoreRing">
+          <span class="score-percent" id="scorePercent">0%</span>
+          <span class="score-fraction" id="scoreFraction">0 / 25</span>
+        </div>
+        <h2 id="resultHeadline" style="font-size:1.6rem; font-weight:800; margin-bottom:0.35rem;">Quiz Completed!</h2>
+        <p id="resultSubtext" style="color:var(--text-muted); max-width:520px; margin:0 auto;">Review your itemized answers below to reinforce key concepts.</p>
+
+        <div class="results-stats-grid">
+          <div class="stat-box">
+            <strong id="statCorrect" style="color:var(--success);">0</strong>
+            <span>Correct Answers</span>
+          </div>
+          <div class="stat-box">
+            <strong id="statIncorrect" style="color:var(--danger);">0</strong>
+            <span>Incorrect / Skipped</span>
+          </div>
+          <div class="stat-box">
+            <strong id="statTime">00:00</strong>
+            <span>Time Elapsed</span>
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:center; gap:0.75rem; flex-wrap:wrap;">
+          <button type="button" class="btn btn-primary" id="retakeQuizBtn">Retake This Quiz</button>
+          <button type="button" class="btn btn-secondary" id="backToMenuFromResultsBtn">Choose Another Quiz</button>
+        </div>
+      </div>
+
+      <div class="review-controls">
+        <h3 style="font-size:1.15rem; font-weight:700;">Detailed Answer Key Review</h3>
+        <div class="segmented-control">
+          <button type="button" class="segment-btn active" data-filter="all">All Items</button>
+          <button type="button" class="segment-btn" data-filter="incorrect">Incorrect Only</button>
+          <button type="button" class="segment-btn" data-filter="correct">Correct Only</button>
+        </div>
+      </div>
+
+      <div id="reviewListContainer"></div>
+    </section>
+  </main>
+
+  <footer>
+    BM2506 Interactive Quiz Portal • All 50 items compiled directly from 07 Quiz 1 & 08 Quiz 1
+  </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
