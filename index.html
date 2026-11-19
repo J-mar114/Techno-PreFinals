@@ -23,10 +23,14 @@
       </div>
       <div class="nav-actions">
         <button id="soundToggleBtn" class="btn btn-secondary icon-btn" title="Toggle Sound Effects" aria-label="Toggle Sound">
-          <span id="soundIcon">🔊</span>
+          <span id="soundIcon" class="nav-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg>
+          </span>
         </button>
         <button id="vibrateToggleBtn" class="btn btn-secondary icon-btn" title="Toggle Vibration (Mobile/Supported devices)" aria-label="Toggle Vibration">
-          <span id="vibrateIcon">📳</span>
+          <span id="vibrateIcon" class="nav-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line><line x1="2" y1="8" x2="2" y2="16"></line><line x1="22" y1="8" x2="22" y2="16"></line></svg>
+          </span>
         </button>
         <button id="exitQuizBtn" class="btn btn-secondary hidden">Exit to Menu</button>
       </div>
@@ -56,27 +60,27 @@
 
       <!-- Shuffle & Audio Settings Card -->
       <div class="settings-card">
-        <div class="settings-title">⚙️ Quiz Experience & Shuffle Settings</div>
+        <div class="settings-title">Quiz Experience & Shuffle Settings</div>
         <div class="settings-grid">
           <label class="toggle-control" title="Randomize the order of questions in the quiz">
             <input type="checkbox" id="shuffleQuestionsToggle" checked />
             <span class="toggle-slider"></span>
-            <span class="toggle-label">🔀 Shuffle Questions</span>
+            <span class="toggle-label">Shuffle Questions</span>
           </label>
           <label class="toggle-control" title="Randomize the multiple choice options (A, B, C, D) for each question">
             <input type="checkbox" id="shuffleOptionsToggle" checked />
             <span class="toggle-slider"></span>
-            <span class="toggle-label">🔀 Shuffle Choices (A, B, C, D)</span>
+            <span class="toggle-label">Shuffle Choices (A, B, C, D)</span>
           </label>
           <label class="toggle-control" title="Sound effects on clicks, correct, incorrect, and completion">
             <input type="checkbox" id="soundSettingToggle" checked />
             <span class="toggle-slider"></span>
-            <span class="toggle-label">🔊 Sound Effects</span>
+            <span class="toggle-label">Sound Effects</span>
           </label>
           <label class="toggle-control" title="Haptic feedback / vibration for mobile and tactile screen devices">
             <input type="checkbox" id="vibrateSettingToggle" checked />
             <span class="toggle-slider"></span>
-            <span class="toggle-label">📳 Haptic Vibration</span>
+            <span class="toggle-label">Haptic Vibration</span>
           </label>
         </div>
       </div>
@@ -148,8 +152,8 @@
         </div>
         <div class="mobile-nav-toggle-row">
           <button type="button" class="btn btn-secondary mobile-grid-toggle" id="mobileGridToggleBtn">
-            <span>📑 Question Sheet (<span id="mobileAnsweredCounter">0/25</span>)</span>
-            <span id="mobileGridChevron">▼</span>
+            <span>Question Sheet (<span id="mobileAnsweredCounter">0/25</span>)</span>
+            <span id="mobileGridChevron">&#9662;</span>
           </button>
         </div>
       </div>
@@ -163,7 +167,7 @@
               <span class="q-source-tag" id="questionSourceLabel">07 Quiz 1 • Item #1</span>
             </div>
             <button type="button" class="flag-btn" id="flagQuestionBtn" title="Bookmark question for review">
-              <span>⚑</span> <span id="flagBtnText">Flag</span>
+              <span class="flag-icon-mark"></span> <span id="flagBtnText">Flag</span>
             </button>
           </div>
 
@@ -250,6 +254,9 @@
   <footer>
     BM2506 Interactive Quiz Portal • All 50 items compiled directly from 07 Quiz 1 & 08 Quiz 1
   </footer>
+
+  <!-- Interactive Particle Canvas -->
+  <canvas id="particleCanvas"></canvas>
 
     <script src="script.js"></script>
 </body>

@@ -963,6 +963,151 @@
     }
 
     // =========================================================================
+    
+    // =========================================================================
+    // INTERACTIVE PARTICLE ENGINE (Atmosphere & Joyful Answer Celebrations)
+    // =========================================================================
+    const ParticleEngine = {
+      canvas: null,
+      ctx: null,
+      particles: [],
+      ambientParticles: [],
+      animationFrameId: null,
+
+      init() {
+        this.canvas = document.getElementById("particleCanvas");
+        if (!this.canvas) return;
+        this.ctx = this.canvas.getContext("2d");
+        this.resize();
+        window.addEventListener("resize", () => this.resize());
+        this.createAmbient();
+        this.loop();
+      },
+
+      resize() {
+        if (!this.canvas) return;
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+      },
+
+      createAmbient() {
+        this.ambientParticles = [];
+        const count = Math.min(45, Math.floor(window.innerWidth / 30));
+        for (let i = 0; i < count; i++) {
+          this.ambientParticles.push({
+            x: Math.random() * (this.canvas.width || window.innerWidth),
+            y: Math.random() * (this.canvas.height || window.innerHeight),
+            vx: (Math.random() - 0.5) * 0.5,
+            vy: (Math.random() - 0.5) * 0.5,
+            radius: Math.random() * 2.2 + 0.8,
+            alpha: Math.random() * 0.35 + 0.15,
+            color: Math.random() > 0.5 ? "56, 189, 248" : "59, 130, 246"
+          });
+        }
+      },
+
+      burst(x, y, type = "correct") {
+        if (!this.ctx || !this.canvas) return;
+        const colors = type === "correct"
+          ? ["#10b981", "#34d399", "#6ee7b7", "#059669", "#fbbf24"]
+          : ["#3b82f6", "#60a5fa", "#93c5fd", "#cbd5e1"];
+        const count = type === "correct" ? 38 : 16;
+
+        for (let i = 0; i < count; i++) {
+          const angle = Math.random() * Math.PI * 2;
+          const speed = Math.random() * (type === "correct" ? 6 : 4) + 1.5;
+          this.particles.push({
+            x: x,
+            y: y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed - (type === "correct" ? 2 : 0),
+            gravity: 0.12,
+            radius: Math.random() * 4 + 2,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            alpha: 1,
+            decay: Math.random() * 0.025 + 0.015,
+            rotation: Math.random() * Math.PI,
+            rotationSpeed: (Math.random() - 0.5) * 0.2,
+            shape: Math.random() > 0.4 ? "circle" : "rect"
+          });
+        }
+      },
+
+      confetti() {
+        if (!this.canvas) return;
+        const w = this.canvas.width;
+        const colors = ["#10b981", "#3b82f6", "#f59e0b", "#ec4899", "#8b5cf6"];
+        for (let i = 0; i < 70; i++) {
+          this.particles.push({
+            x: Math.random() * w,
+            y: -10,
+            vx: (Math.random() - 0.5) * 4,
+            vy: Math.random() * 3 + 2,
+            gravity: 0.05,
+            radius: Math.random() * 5 + 3,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            alpha: 1,
+            decay: 0.007,
+            rotation: Math.random() * Math.PI,
+            rotationSpeed: (Math.random() - 0.5) * 0.1,
+            shape: "rect"
+          });
+        }
+      },
+
+      loop() {
+        if (!this.ctx || !this.canvas) return;
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+        // Render ambient floating background particles
+        for (let p of this.ambientParticles) {
+          p.x += p.vx;
+          p.y += p.vy;
+          if (p.x < 0) p.x = this.canvas.width;
+          if (p.x > this.canvas.width) p.x = 0;
+          if (p.y < 0) p.y = this.canvas.height;
+          if (p.y > this.canvas.height) p.y = 0;
+
+          this.ctx.beginPath();
+          this.ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+          this.ctx.fillStyle = "rgba(" + p.color + ", " + p.alpha + ")";
+          this.ctx.fill();
+        }
+
+        // Render bursts & confetti
+        for (let i = this.particles.length - 1; i >= 0; i--) {
+          const p = this.particles[i];
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += p.gravity;
+          p.alpha -= p.decay;
+          p.rotation += p.rotationSpeed;
+
+          if (p.alpha <= 0) {
+            this.particles.splice(i, 1);
+            continue;
+          }
+
+          this.ctx.save();
+          this.ctx.translate(p.x, p.y);
+          this.ctx.rotate(p.rotation);
+          this.ctx.globalAlpha = Math.max(0, p.alpha);
+          this.ctx.fillStyle = p.color;
+
+          if (p.shape === "circle") {
+            this.ctx.beginPath();
+            this.ctx.arc(0, 0, p.radius, 0, Math.PI * 2);
+            this.ctx.fill();
+          } else {
+            this.ctx.fillRect(-p.radius, -p.radius / 1.5, p.radius * 2, p.radius * 1.5);
+          }
+          this.ctx.restore();
+        }
+
+        this.animationFrameId = requestAnimationFrame(() => this.loop());
+      }
+    };
+
     // DOM ELEMENTS
     // =========================================================================
     const homeView = document.getElementById("homeView");
@@ -1015,7 +1160,7 @@
         SoundEffects.click();
         const isOpen = navigatorCard.classList.toggle("show-mobile");
         if (mobileGridChevron) {
-          mobileGridChevron.textContent = isOpen ? "▲" : "▼";
+          mobileGridChevron.textContent = isOpen ? "▴" : "▾";
         }
       });
     }
@@ -1056,11 +1201,19 @@
     }
 
     function updateSettingsUI() {
-      if (soundIcon) soundIcon.textContent = state.settings.sound ? "🔊" : "🔇";
+      if (soundIcon) {
+        soundIcon.innerHTML = state.settings.sound
+          ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg>'
+          : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>';
+      }
       if (soundToggleBtn) soundToggleBtn.classList.toggle("muted", !state.settings.sound);
       if (soundSettingToggle) soundSettingToggle.checked = state.settings.sound;
 
-      if (vibrateIcon) vibrateIcon.textContent = state.settings.vibrate ? "📳" : "📴";
+      if (vibrateIcon) {
+        vibrateIcon.innerHTML = state.settings.vibrate
+          ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line><line x1="2" y1="8" x2="2" y2="16"></line><line x1="22" y1="8" x2="22" y2="16"></line></svg>'
+          : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line><line x1="1" y1="1" x2="23" y2="23"></line></svg>';
+      }
       if (vibrateToggleBtn) vibrateToggleBtn.classList.toggle("muted", !state.settings.vibrate);
       if (vibrateSettingToggle) vibrateSettingToggle.checked = state.settings.vibrate;
 
@@ -1137,6 +1290,7 @@
         localStorage.setItem(`bm2506_best_${key}`, `${score}/${total} (${pct}%)`);
       }
       loadBestScores();
+    ParticleEngine.init();
     }
 
     // =========================================================================
@@ -1359,6 +1513,8 @@
           HapticFeedback.correct();
           if (element) {
             element.classList.add("pop-correct");
+            const rect = element.getBoundingClientRect();
+            ParticleEngine.burst(rect.left + rect.width / 2, rect.top + rect.height / 2, "correct");
           }
         } else {
           SoundEffects.incorrect();
@@ -1535,6 +1691,9 @@
 
       // Sound & vibration on finish
       SoundEffects.complete();
+      if (pct >= 75) {
+        ParticleEngine.confetti();
+      }
       if (pct >= 75) {
         HapticFeedback.correct();
       } else {
