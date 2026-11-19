@@ -1510,3 +1510,92 @@ footer {
     align-items: stretch;
   }
 }
+
+
+/* =========================================================================
+   PHONE-FIRST ERGONOMIC CONTROLS (Sticky Bottom Bar & One-Handed Reach)
+   ========================================================================= */
+
+@media (max-width: 680px) {
+  /* Sticky bottom action dock for comfortable thumb reach */
+  .question-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(11, 15, 25, 0.94);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    padding: 0.75rem 1rem env(safe-area-inset-bottom, 0.75rem);
+    margin: 0;
+    border-top: 2px solid #1e293b;
+    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.7);
+    z-index: 60;
+    display: flex;
+    gap: 0.75rem;
+  }
+
+  .question-footer .btn {
+    flex: 1;
+    min-height: 48px;
+    font-size: 0.95rem;
+  }
+
+  /* Add bottom margin to avoid overlapping with fixed bottom controls */
+  .container {
+    padding-bottom: 6.5rem !important;
+  }
+
+  /* Larger touch target for multiple choice cards */
+  .option-item {
+    padding: 1.15rem 1.1rem;
+    font-size: 1rem;
+    min-height: 56px;
+    align-items: center;
+  }
+
+  .option-letter {
+    width: 36px;
+    height: 36px;
+    font-size: 0.92rem;
+  }
+
+  .option-text {
+    padding-top: 0;
+  }
+
+  /* Full-width stage start buttons */
+  .deck-footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.85rem;
+  }
+
+  .deck-footer .btn {
+    width: 100%;
+    min-height: 48px;
+  }
+
+  .deck-footer .best-score {
+    text-align: center;
+  }
+
+  /* Tactile flag button on phones */
+  .flag-btn {
+    min-height: 38px;
+    padding: 0.45rem 0.9rem;
+    font-size: 0.88rem;
+  }
+
+  /* Sticky top HUD */
+  .quiz-topbar {
+    position: sticky;
+    top: 56px;
+    z-index: 40;
+    padding: 0.85rem 1rem;
+    margin-bottom: 1rem;
+    background: rgba(17, 24, 39, 0.94);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+}
