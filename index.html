@@ -146,6 +146,12 @@
         <div class="progress-track">
           <div class="progress-fill" id="progressFill"></div>
         </div>
+        <div class="mobile-nav-toggle-row">
+          <button type="button" class="btn btn-secondary mobile-grid-toggle" id="mobileGridToggleBtn">
+            <span>📑 Question Sheet (<span id="mobileAnsweredCounter">0/25</span>)</span>
+            <span id="mobileGridChevron">▼</span>
+          </button>
+        </div>
       </div>
 
       <div class="quiz-layout">
@@ -177,7 +183,7 @@
         </div>
 
         <!-- Question Navigator Sidebar -->
-        <aside class="navigator-card">
+        <aside class="navigator-card" id="navigatorCard">
           <div class="navigator-title">
             <span>Question Navigator</span>
             <span id="navProgressText" style="font-size:0.78rem; color:var(--primary);">0/25</span>

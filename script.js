@@ -1005,6 +1005,20 @@
     const sidebarSubmitBtn = document.getElementById("sidebarSubmitBtn");
     const navGrid = document.getElementById("navGrid");
     const navProgressText = document.getElementById("navProgressText");
+    const navigatorCard = document.getElementById("navigatorCard");
+    const mobileGridToggleBtn = document.getElementById("mobileGridToggleBtn");
+    const mobileAnsweredCounter = document.getElementById("mobileAnsweredCounter");
+    const mobileGridChevron = document.getElementById("mobileGridChevron");
+
+    if (mobileGridToggleBtn && navigatorCard) {
+      mobileGridToggleBtn.addEventListener("click", () => {
+        SoundEffects.click();
+        const isOpen = navigatorCard.classList.toggle("show-mobile");
+        if (mobileGridChevron) {
+          mobileGridChevron.textContent = isOpen ? "▲" : "▼";
+        }
+      });
+    }
 
     // Results elements
     const scoreRing = document.getElementById("scoreRing");
@@ -1365,6 +1379,9 @@
 
       answeredCounter.textContent = `Answered: ${answeredCount} / ${total}`;
       navProgressText.textContent = `${answeredCount}/${total}`;
+      if (mobileAnsweredCounter) {
+        mobileAnsweredCounter.textContent = `${answeredCount}/${total}`;
+      }
       progressFill.style.width = `${pct}%`;
     }
 
