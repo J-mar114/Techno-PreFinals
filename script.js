@@ -1219,6 +1219,9 @@
 
       if (shuffleQuestionsToggle) shuffleQuestionsToggle.checked = state.settings.shuffleQuestions;
       if (shuffleOptionsToggle) shuffleOptionsToggle.checked = state.settings.shuffleOptions;
+
+      if (bNavSound) bNavSound.classList.toggle("muted", !state.settings.sound);
+      if (bNavVibrate) bNavVibrate.classList.toggle("muted", !state.settings.vibrate);
     }
 
     function toggleSound() {
@@ -1813,6 +1816,51 @@
       HapticFeedback.light();
       switchView("home");
     });
+
+    
+    // Bottom Navigation Bar Listeners
+    const bNavHome = document.getElementById("bNavHome");
+    const bNavSound = document.getElementById("bNavSound");
+    const bNavVibrate = document.getElementById("bNavVibrate");
+    const bNavSheet = document.getElementById("bNavSheet");
+    const bNavSoundIcon = document.getElementById("bNavSoundIcon");
+    const bNavVibrateIcon = document.getElementById("bNavVibrateIcon");
+
+    if (bNavHome) {
+      bNavHome.addEventListener("click", () => {
+        SoundEffects.click();
+        if (!quizView.classList.contains("hidden") && !state.isSubmitted && Object.keys(state.userAnswers).length > 0) {
+          if (!confirm("Return to main menu? Your current progress will be lost.")) return;
+        }
+        switchView("home");
+      });
+    }
+
+    if (bNavSound) {
+      bNavSound.addEventListener("click", () => {
+        toggleSound();
+      });
+    }
+
+    if (bNavVibrate) {
+      bNavVibrate.addEventListener("click", () => {
+        toggleVibrate();
+      });
+    }
+
+    if (bNavSheet) {
+      bNavSheet.addEventListener("click", () => {
+        SoundEffects.click();
+        if (quizView.classList.contains("hidden")) return;
+        if (navigatorCard) {
+          const isOpen = navigatorCard.classList.toggle("show-mobile");
+          bNavSheet.classList.toggle("active", isOpen);
+          if (isOpen) {
+            navigatorCard.scrollIntoView({ behavior: "smooth" });
+          }
+        }
+      });
+    }
 
     // Boot
     loadSavedSettings();
