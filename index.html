@@ -22,6 +22,12 @@
         </div>
       </div>
       <div class="nav-actions">
+        <button id="soundToggleBtn" class="btn btn-secondary icon-btn" title="Toggle Sound Effects" aria-label="Toggle Sound">
+          <span id="soundIcon">🔊</span>
+        </button>
+        <button id="vibrateToggleBtn" class="btn btn-secondary icon-btn" title="Toggle Vibration (Mobile/Supported devices)" aria-label="Toggle Vibration">
+          <span id="vibrateIcon">📳</span>
+        </button>
         <button id="exitQuizBtn" class="btn btn-secondary hidden">Exit to Menu</button>
       </div>
     </div>
@@ -45,6 +51,33 @@
         <div class="segmented-control" role="group" aria-label="Quiz Mode">
           <button type="button" class="segment-btn active" data-mode="practice">Practice Mode (Instant Check)</button>
           <button type="button" class="segment-btn" data-mode="exam">Exam Mode (Score at End)</button>
+        </div>
+      </div>
+
+      <!-- Shuffle & Audio Settings Card -->
+      <div class="settings-card">
+        <div class="settings-title">⚙️ Quiz Experience & Shuffle Settings</div>
+        <div class="settings-grid">
+          <label class="toggle-control" title="Randomize the order of questions in the quiz">
+            <input type="checkbox" id="shuffleQuestionsToggle" checked />
+            <span class="toggle-slider"></span>
+            <span class="toggle-label">🔀 Shuffle Questions</span>
+          </label>
+          <label class="toggle-control" title="Randomize the multiple choice options (A, B, C, D) for each question">
+            <input type="checkbox" id="shuffleOptionsToggle" checked />
+            <span class="toggle-slider"></span>
+            <span class="toggle-label">🔀 Shuffle Choices (A, B, C, D)</span>
+          </label>
+          <label class="toggle-control" title="Sound effects on clicks, correct, incorrect, and completion">
+            <input type="checkbox" id="soundSettingToggle" checked />
+            <span class="toggle-slider"></span>
+            <span class="toggle-label">🔊 Sound Effects</span>
+          </label>
+          <label class="toggle-control" title="Haptic feedback / vibration for mobile and tactile screen devices">
+            <input type="checkbox" id="vibrateSettingToggle" checked />
+            <span class="toggle-slider"></span>
+            <span class="toggle-label">📳 Haptic Vibration</span>
+          </label>
         </div>
       </div>
 
