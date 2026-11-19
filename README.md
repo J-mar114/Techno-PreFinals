@@ -15,6 +15,10 @@ GitHub: [@J-mar114](https://github.com/J-mar114)
 ## 🚀 Features
 
 - **Modular & Clean Architecture**: Cleanly separated into standard HTML5, CSS3, and modern ES6 JavaScript (`index.html`, `style.css`, and `script.js`).
+- **Smart Question & Choice Shuffling**: Automatically randomizes both question ordering and multiple-choice options (`A, B, C, D`) on every quiz attempt while maintaining 100% answer key fidelity. Customizable via the settings panel.
+- **Synthesized Sound Effects**: Built-in audio cues using the native Web Audio API (satisfying chime for correct answers, low error buzz for mistakes, victory fanfare on completion, and button clicks) with zero external audio assets required.
+- **Haptic Vibration Feedback**: Native tactile haptic feedback via the Vibration API with animated shake and pop fallbacks for mobile and touch devices.
+- **Sound & Vibration Controls**: Accessible toggles in the navigation bar and home settings card with persistent preferences stored in `localStorage`.
 - **Multiple Assessment Modes**:
   - **07 Quiz 1**: Practice set 1 with authentic exam questions.
   - **08 Quiz 1**: Practice set 2 with complete problem coverage.

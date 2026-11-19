@@ -760,7 +760,9 @@
     };
 
     // =========================================================================
-    // APPLICATION STATE
+
+    // =========================================================================
+    // APPLICATION STATE & SETTINGS
     // =========================================================================
     const state = {
       mode: "practice", // 'practice' | 'exam'
@@ -771,10 +773,194 @@
       flagged: new Set(),
       timerSeconds: 0,
       timerInterval: null,
-      isSubmitted: false
+      isSubmitted: false,
+      settings: {
+        shuffleQuestions: true,
+        shuffleOptions: true,
+        sound: true,
+        vibrate: true
+      }
     };
 
     const LETTERS = ["A", "B", "C", "D"];
+
+    // =========================================================================
+    // AUDIO (Web Audio API Synthesizer - Self-contained, No External MP3s)
+    // =========================================================================
+    let audioCtx = null;
+
+    function getAudioContext() {
+      if (!audioCtx) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (AudioContextClass) {
+          audioCtx = new AudioContextClass();
+        }
+      }
+      if (audioCtx && audioCtx.state === "suspended") {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    const SoundEffects = {
+      click() {
+        if (!state.settings.sound) return;
+        const ctx = getAudioContext();
+        if (!ctx) return;
+        try {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = "sine";
+          osc.frequency.setValueAtTime(440, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.04);
+          gain.gain.setValueAtTime(0.06, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.05);
+        } catch (e) {}
+      },
+
+      correct() {
+        if (!state.settings.sound) return;
+        const ctx = getAudioContext();
+        if (!ctx) return;
+        try {
+          const now = ctx.currentTime;
+          [523.25, 659.25, 783.99].forEach((freq, idx) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = "triangle";
+            osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+            gain.gain.setValueAtTime(0, now + idx * 0.08);
+            gain.gain.linearRampToValueAtTime(0.18, now + idx * 0.08 + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.28);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now + idx * 0.08);
+            osc.stop(now + idx * 0.08 + 0.3);
+          });
+        } catch (e) {}
+      },
+
+      incorrect() {
+        if (!state.settings.sound) return;
+        const ctx = getAudioContext();
+        if (!ctx) return;
+        try {
+          const now = ctx.currentTime;
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = "sawtooth";
+          osc.frequency.setValueAtTime(160, now);
+          osc.frequency.linearRampToValueAtTime(110, now + 0.22);
+          gain.gain.setValueAtTime(0.16, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.24);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.25);
+        } catch (e) {}
+      },
+
+      complete() {
+        if (!state.settings.sound) return;
+        const ctx = getAudioContext();
+        if (!ctx) return;
+        try {
+          const now = ctx.currentTime;
+          const notes = [
+            { f: 523.25, t: 0.0, d: 0.12 },
+            { f: 659.25, t: 0.12, d: 0.12 },
+            { f: 783.99, t: 0.24, d: 0.14 },
+            { f: 1046.50, t: 0.38, d: 0.35 }
+          ];
+          notes.forEach(({ f, t, d }) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = "sine";
+            osc.frequency.setValueAtTime(f, now + t);
+            gain.gain.setValueAtTime(0, now + t);
+            gain.gain.linearRampToValueAtTime(0.2, now + t + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + t + d);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now + t);
+            osc.stop(now + t + d + 0.02);
+          });
+        } catch (e) {}
+      }
+    };
+
+    // =========================================================================
+    // HAPTIC VIBRATION (Navigator Vibrate API + Screen Shake Fallback)
+    // =========================================================================
+    const HapticFeedback = {
+      light() {
+        if (!state.settings.vibrate) return;
+        if ("vibrate" in navigator) {
+          try { navigator.vibrate(20); } catch (e) {}
+        }
+      },
+      correct() {
+        if (!state.settings.vibrate) return;
+        if ("vibrate" in navigator) {
+          try { navigator.vibrate([40, 50, 60]); } catch (e) {}
+        }
+      },
+      incorrect(element) {
+        if (!state.settings.vibrate) return;
+        if ("vibrate" in navigator) {
+          try { navigator.vibrate([80, 50, 80]); } catch (e) {}
+        }
+        if (element) {
+          element.classList.remove("shake");
+          void element.offsetWidth; // trigger reflow
+          element.classList.add("shake");
+          setTimeout(() => element.classList.remove("shake"), 450);
+        }
+      }
+    };
+
+    // =========================================================================
+    // SHUFFLE ALGORITHMS (Fisher-Yates)
+    // =========================================================================
+    function shuffleArray(arr) {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function prepareQuestions(rawList, shuffleQ, shuffleO) {
+      let list = rawList.map(raw => {
+        if (!shuffleO) {
+          return {
+            ...raw,
+            options: [...raw.options],
+            answer: raw.answer
+          };
+        }
+        const mapped = raw.options.map((opt, idx) => ({
+          text: opt,
+          isCorrect: idx === raw.answer
+        }));
+        const shuffled = shuffleArray(mapped);
+        return {
+          ...raw,
+          options: shuffled.map(o => o.text),
+          answer: shuffled.findIndex(o => o.isCorrect)
+        };
+      });
+
+      if (shuffleQ) {
+        list = shuffleArray(list);
+      }
+      return list;
+    }
 
     // =========================================================================
     // DOM ELEMENTS
@@ -784,6 +970,18 @@
     const resultsView = document.getElementById("resultsView");
     const exitQuizBtn = document.getElementById("exitQuizBtn");
     const homeLogoBtn = document.getElementById("homeLogoBtn");
+
+    // Audio / Vibrate Nav Controls
+    const soundToggleBtn = document.getElementById("soundToggleBtn");
+    const soundIcon = document.getElementById("soundIcon");
+    const vibrateToggleBtn = document.getElementById("vibrateToggleBtn");
+    const vibrateIcon = document.getElementById("vibrateIcon");
+
+    // Settings Card Toggles
+    const shuffleQuestionsToggle = document.getElementById("shuffleQuestionsToggle");
+    const shuffleOptionsToggle = document.getElementById("shuffleOptionsToggle");
+    const soundSettingToggle = document.getElementById("soundSettingToggle");
+    const vibrateSettingToggle = document.getElementById("vibrateSettingToggle");
 
     // Mode controls
     const modeButtons = document.querySelectorAll(".segment-btn[data-mode]");
@@ -820,8 +1018,93 @@
     const reviewListContainer = document.getElementById("reviewListContainer");
 
     // =========================================================================
-    // INITIALIZATION & PERSISTED BEST SCORES
+    // INITIALIZATION & PERSISTED SETTINGS & BEST SCORES
     // =========================================================================
+    function loadSavedSettings() {
+      const savedSound = localStorage.getItem("bm2506_sound");
+      if (savedSound !== null) {
+        state.settings.sound = savedSound === "true";
+      }
+      const savedVibrate = localStorage.getItem("bm2506_vibrate");
+      if (savedVibrate !== null) {
+        state.settings.vibrate = savedVibrate === "true";
+      }
+      const savedShuffleQ = localStorage.getItem("bm2506_shuffle_q");
+      if (savedShuffleQ !== null) {
+        state.settings.shuffleQuestions = savedShuffleQ === "true";
+      }
+      const savedShuffleO = localStorage.getItem("bm2506_shuffle_o");
+      if (savedShuffleO !== null) {
+        state.settings.shuffleOptions = savedShuffleO === "true";
+      }
+
+      updateSettingsUI();
+    }
+
+    function updateSettingsUI() {
+      if (soundIcon) soundIcon.textContent = state.settings.sound ? "🔊" : "🔇";
+      if (soundToggleBtn) soundToggleBtn.classList.toggle("muted", !state.settings.sound);
+      if (soundSettingToggle) soundSettingToggle.checked = state.settings.sound;
+
+      if (vibrateIcon) vibrateIcon.textContent = state.settings.vibrate ? "📳" : "📴";
+      if (vibrateToggleBtn) vibrateToggleBtn.classList.toggle("muted", !state.settings.vibrate);
+      if (vibrateSettingToggle) vibrateSettingToggle.checked = state.settings.vibrate;
+
+      if (shuffleQuestionsToggle) shuffleQuestionsToggle.checked = state.settings.shuffleQuestions;
+      if (shuffleOptionsToggle) shuffleOptionsToggle.checked = state.settings.shuffleOptions;
+    }
+
+    function toggleSound() {
+      state.settings.sound = !state.settings.sound;
+      localStorage.setItem("bm2506_sound", state.settings.sound);
+      updateSettingsUI();
+      if (state.settings.sound) SoundEffects.click();
+    }
+
+    function toggleVibrate() {
+      state.settings.vibrate = !state.settings.vibrate;
+      localStorage.setItem("bm2506_vibrate", state.settings.vibrate);
+      updateSettingsUI();
+      if (state.settings.vibrate) HapticFeedback.light();
+    }
+
+    if (soundToggleBtn) soundToggleBtn.addEventListener("click", toggleSound);
+    if (vibrateToggleBtn) vibrateToggleBtn.addEventListener("click", toggleVibrate);
+
+    if (soundSettingToggle) {
+      soundSettingToggle.addEventListener("change", (e) => {
+        state.settings.sound = e.target.checked;
+        localStorage.setItem("bm2506_sound", state.settings.sound);
+        updateSettingsUI();
+        if (state.settings.sound) SoundEffects.click();
+      });
+    }
+
+    if (vibrateSettingToggle) {
+      vibrateSettingToggle.addEventListener("change", (e) => {
+        state.settings.vibrate = e.target.checked;
+        localStorage.setItem("bm2506_vibrate", state.settings.vibrate);
+        updateSettingsUI();
+        if (state.settings.vibrate) HapticFeedback.light();
+      });
+    }
+
+    if (shuffleQuestionsToggle) {
+      shuffleQuestionsToggle.addEventListener("change", (e) => {
+        state.settings.shuffleQuestions = e.target.checked;
+        localStorage.setItem("bm2506_shuffle_q", state.settings.shuffleQuestions);
+        SoundEffects.click();
+      });
+    }
+
+    if (shuffleOptionsToggle) {
+      shuffleOptionsToggle.addEventListener("change", (e) => {
+        state.settings.shuffleOptions = e.target.checked;
+        localStorage.setItem("bm2506_shuffle_o", state.settings.shuffleOptions);
+        SoundEffects.click();
+      });
+    }
+
     function loadBestScores() {
       ["quiz1", "quiz2", "all"].forEach(key => {
         const saved = localStorage.getItem(`bm2506_best_${key}`);
@@ -847,6 +1130,8 @@
     // =========================================================================
     modeButtons.forEach(btn => {
       btn.addEventListener("click", () => {
+        SoundEffects.click();
+        HapticFeedback.light();
         modeButtons.forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
         state.mode = btn.dataset.mode;
@@ -863,6 +1148,8 @@
     // =========================================================================
     document.querySelectorAll(".start-deck-btn").forEach(btn => {
       btn.addEventListener("click", () => {
+        SoundEffects.click();
+        HapticFeedback.light();
         startQuiz(btn.dataset.deck);
       });
     });
@@ -875,16 +1162,24 @@
       state.timerSeconds = 0;
       state.isSubmitted = false;
 
+      let rawSet = [];
       if (deckKey === "quiz1") {
-        state.questions = [...QUIZ_DATA.quiz1];
+        rawSet = QUIZ_DATA.quiz1;
         activeDeckTitle.textContent = "07 Quiz 1 — Go-To-Market & Sales Funnel";
       } else if (deckKey === "quiz2") {
-        state.questions = [...QUIZ_DATA.quiz2];
+        rawSet = QUIZ_DATA.quiz2;
         activeDeckTitle.textContent = "08 Quiz 1 — Startup Costs & Financial Projections";
       } else {
-        state.questions = [...QUIZ_DATA.quiz1, ...QUIZ_DATA.quiz2];
+        rawSet = [...QUIZ_DATA.quiz1, ...QUIZ_DATA.quiz2];
         activeDeckTitle.textContent = "Master Review — Combined (07 Quiz 1 + 08 Quiz 1)";
       }
+
+      // Apply Shuffle Settings
+      state.questions = prepareQuestions(
+        rawSet,
+        state.settings.shuffleQuestions,
+        state.settings.shuffleOptions
+      );
 
       switchView("quiz");
       buildNavigator();
@@ -986,7 +1281,7 @@
           <span class="option-status-icon">${statusIcon}</span>
         `;
 
-        btn.addEventListener("click", () => handleSelectOption(optIdx));
+        btn.addEventListener("click", () => handleSelectOption(optIdx, btn));
         optionsContainer.appendChild(btn);
       });
 
@@ -1031,13 +1326,35 @@
       updateNavigatorUI();
     }
 
-    function handleSelectOption(optIdx) {
+    function handleSelectOption(optIdx, element) {
       const idx = state.currentIndex;
+      const item = state.questions[idx];
+
       // In practice mode, lock answer once selected so user learns immediately
       if (state.mode === "practice" && state.userAnswers[idx] !== undefined) {
         return;
       }
+
       state.userAnswers[idx] = optIdx;
+
+      // Audio & Vibration feedback
+      if (state.mode === "practice") {
+        const isRight = optIdx === item.answer;
+        if (isRight) {
+          SoundEffects.correct();
+          HapticFeedback.correct();
+          if (element) {
+            element.classList.add("pop-correct");
+          }
+        } else {
+          SoundEffects.incorrect();
+          HapticFeedback.incorrect(element || optionsContainer);
+        }
+      } else {
+        SoundEffects.click();
+        HapticFeedback.light();
+      }
+
       renderQuestion();
     }
 
@@ -1062,6 +1379,8 @@
         dot.className = "nav-dot";
         dot.textContent = idx + 1;
         dot.addEventListener("click", () => {
+          SoundEffects.click();
+          HapticFeedback.light();
           state.currentIndex = idx;
           renderQuestion();
         });
@@ -1092,6 +1411,8 @@
     // CONTROLS & KEYBOARD SHORTCUTS
     // =========================================================================
     prevBtn.addEventListener("click", () => {
+      SoundEffects.click();
+      HapticFeedback.light();
       if (state.currentIndex > 0) {
         state.currentIndex--;
         renderQuestion();
@@ -1099,6 +1420,8 @@
     });
 
     nextBtn.addEventListener("click", () => {
+      SoundEffects.click();
+      HapticFeedback.light();
       if (state.currentIndex < state.questions.length - 1) {
         state.currentIndex++;
         renderQuestion();
@@ -1106,6 +1429,8 @@
     });
 
     flagQuestionBtn.addEventListener("click", () => {
+      SoundEffects.click();
+      HapticFeedback.light();
       const idx = state.currentIndex;
       if (state.flagged.has(idx)) {
         state.flagged.delete(idx);
@@ -1116,6 +1441,8 @@
     });
 
     function confirmAndSubmit() {
+      SoundEffects.click();
+      HapticFeedback.light();
       const total = state.questions.length;
       const answeredCount = Object.keys(state.userAnswers).length;
       if (answeredCount < total) {
@@ -1130,6 +1457,8 @@
     sidebarSubmitBtn.addEventListener("click", confirmAndSubmit);
 
     exitQuizBtn.addEventListener("click", () => {
+      SoundEffects.click();
+      HapticFeedback.light();
       if (!state.isSubmitted && Object.keys(state.userAnswers).length > 0) {
         if (!confirm("Exit current quiz? Your current progress will be lost.")) return;
       }
@@ -1137,6 +1466,8 @@
     });
 
     homeLogoBtn.addEventListener("click", () => {
+      SoundEffects.click();
+      HapticFeedback.light();
       if (!quizView.classList.contains("hidden") && !state.isSubmitted && Object.keys(state.userAnswers).length > 0) {
         if (!confirm("Return to main menu? Your current progress will be lost.")) return;
       }
@@ -1151,11 +1482,13 @@
         handleSelectOption(LETTERS.indexOf(key));
       } else if (e.key === "ArrowRight") {
         if (state.currentIndex < state.questions.length - 1) {
+          SoundEffects.click();
           state.currentIndex++;
           renderQuestion();
         }
       } else if (e.key === "ArrowLeft") {
         if (state.currentIndex > 0) {
+          SoundEffects.click();
           state.currentIndex--;
           renderQuestion();
         }
@@ -1182,6 +1515,14 @@
       const pct = Math.round((correctCount / total) * 100);
 
       saveBestScore(state.activeDeckKey, correctCount, total);
+
+      // Sound & vibration on finish
+      SoundEffects.complete();
+      if (pct >= 75) {
+        HapticFeedback.correct();
+      } else {
+        HapticFeedback.incorrect();
+      }
 
       // Populate Results UI
       scorePercent.textContent = `${pct}%`;
@@ -1278,6 +1619,7 @@
     // Filter tabs on results page
     document.querySelectorAll(".segment-btn[data-filter]").forEach(btn => {
       btn.addEventListener("click", () => {
+        SoundEffects.click();
         document.querySelectorAll(".segment-btn[data-filter]").forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
         renderReviewList(btn.dataset.filter);
@@ -1285,12 +1627,17 @@
     });
 
     document.getElementById("retakeQuizBtn").addEventListener("click", () => {
+      SoundEffects.click();
+      HapticFeedback.light();
       startQuiz(state.activeDeckKey);
     });
 
     document.getElementById("backToMenuFromResultsBtn").addEventListener("click", () => {
+      SoundEffects.click();
+      HapticFeedback.light();
       switchView("home");
     });
 
     // Boot
+    loadSavedSettings();
     loadBestScores();
